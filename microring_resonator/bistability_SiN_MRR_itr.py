@@ -23,12 +23,12 @@ lambda_0 = 1550e-9
 delta_lambda_therm = 0
 delta_lambda_kerr = 0
 omega_0 = 2 * np.pi * c / (lambda_0 + delta_lambda_therm + delta_lambda_kerr)
-P_in = np.array([0.001, 0.01, 0.1, 1, 5, 10, 15])
+P_in = np.array([0.001, 0.01, 0.1, 1, 5]) # in mW
 tau_in = Q_in / omega_0
 tau_v = Q_v / omega_0
 
-omega = np.linspace(2 * np.pi * 193.62e12, 2 * np.pi * 193.20e12, 200)
-omega_rev = np.linspace(2 * np.pi * 193.20e12, 2 * np.pi * 193.62e12, 200)
+omega = np.linspace(2 * np.pi * 193.62e12, 2 * np.pi * 193.20e12, 2000)
+# omega_rev = np.linspace(2 * np.pi * 193.20e12, 2 * np.pi * 193.62e12, 2000)
 photon_energy = np.zeros((len(P_in), len(omega)))
 
 fixed_omega = 2 * np.pi * c / (lambda_0 + 0.1e-9)
@@ -60,19 +60,19 @@ for i in range(len(P_in)):
             photon_energy_evo[i,j,z] = photon_energy[i,j]
 
             omega_0 = 2 * np.pi * c / (lambda_0 + delta_lambda_therm + delta_lambda_kerr)
-            # tau_in = Q_in / omega_0
-            # tau_v = Q_v / omega_0
+            tau_in = Q_in / omega_0
+            tau_v = Q_v / omega_0
             delta_lambda_therm = (lambda_0 / n_0) * dn_by_dT * photon_energy[i, j] * (1 / tau_linear) * R
             delta_lambda_kerr = (n_2 * c * photon_energy[i, j] * lambda_0) / (n_0 * n_g * V_kerr)
 
-# Cavity Energy vs Input Power
+# Cavity Energy vs Input Power for a fixed omega
 for i in range(len(P_in_fo)):
     for z in range(n_itr):
         photon_energy_fixed_omega[i] = ((1 / tau_in_fo) * (P_in_fo[i] / 2)) / ((fixed_omega - omega_0_fo) ** 2 + (((1 / tau_in_fo) + (1 / tau_v_fo) + (1 / tau_linear)) ** 2) / 4)
         
         omega_0_fo = 2 * np.pi * c / (lambda_0 + delta_lambda_therm_fo + delta_lambda_kerr_fo)
-        # tau_in_fo = Q_in / omega_0_fo
-        # tau_v_fo = Q_v / omega_0_fo
+        tau_in_fo = Q_in / omega_0_fo
+        tau_v_fo = Q_v / omega_0_fo
         delta_lambda_therm_fo = (lambda_0 / n_0) * dn_by_dT * photon_energy_fixed_omega[i] * (1 / tau_linear) * R
         delta_lambda_kerr_fo = (n_2 * c * photon_energy_fixed_omega[i] * lambda_0) / (n_0 * n_g * V_kerr)
 
@@ -82,8 +82,8 @@ for i in range(len(P_in_fo_rev)):
         photon_energy_fixed_omega_rev[i] = ((1 / tau_in_fo_rev) * (P_in_fo_rev[i] / 2)) / ((fixed_omega - omega_0_fo_rev) ** 2 + (((1 / tau_in_fo_rev) + (1 / tau_v_fo_rev) + (1 / tau_linear)) ** 2) / 4)
         
         omega_0_fo_rev = 2 * np.pi * c / (lambda_0 + delta_lambda_therm_fo_rev + delta_lambda_kerr_fo_rev)
-        # tau_in_fo_rev = Q_in / omega_0_fo_rev
-        # tau_v_fo_rev = Q_v / omega_0_fo_rev
+        tau_in_fo_rev = Q_in / omega_0_fo_rev
+        tau_v_fo_rev = Q_v / omega_0_fo_rev
         delta_lambda_therm_fo_rev = (lambda_0 / n_0) * dn_by_dT * photon_energy_fixed_omega_rev[i] * (1 / tau_linear) * R
         delta_lambda_kerr_fo_rev = (n_2 * c * photon_energy_fixed_omega_rev[i] * lambda_0) / (n_0 * n_g * V_kerr)
 
@@ -103,7 +103,7 @@ plt.show()
 plt.figure(dpi=400)
 for i in range(len(P_in)):
     plt.plot(x_n_itr, 1e-3 * photon_energy_evo[i,round(len(omega)/2),:], label=f'$P_i$= {P_in[i]:0.3f} mW', linewidth=1.5)
-plt.title('')
+plt.title('$\lambda$ = '+ np.array2string(2*np.pi*1e9*c/omega[round(len(omega)/2)], formatter={'float_kind':lambda x: "%.3f" % x}) + ' nm')
 plt.xlabel('Number of iterations')
 plt.ylabel('Cavity Photon Energy [J]')
 plt.xlim([min(x_n_itr), max(x_n_itr)])
@@ -116,10 +116,10 @@ print('round(len(omega)/2 - len(omega/4)):: ',round(len(omega)/2 - delta_omega_l
 
 
 plt.figure(dpi=400)
-plt.plot(x_n_itr, 1e-3 * photon_energy_evo[6,round(len(omega)/2),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2)]:0.3f} nm', linewidth=1.5)
-plt.plot(x_n_itr, 1e-3 * photon_energy_evo[6,round(len(omega)/2 + delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 + delta_omega_loc)]:0.3f} nm', linewidth=1.5)
-plt.plot(x_n_itr, 1e-3 * photon_energy_evo[6,round(len(omega)/2 - delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 - delta_omega_loc)]:0.3f} nm', linewidth=1.5)
-plt.title('$P_i$ = '+ np.array2string(P_in[6], formatter={'float_kind':lambda x: "%.2f" % x}) + ' mW')
+plt.plot(x_n_itr, 1e-3 * photon_energy_evo[4,round(len(omega)/2),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2)]:0.3f} nm', linewidth=1.5)
+plt.plot(x_n_itr, 1e-3 * photon_energy_evo[4,round(len(omega)/2 + delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 + delta_omega_loc)]:0.3f} nm', linewidth=1.5)
+plt.plot(x_n_itr, 1e-3 * photon_energy_evo[4,round(len(omega)/2 - delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 - delta_omega_loc)]:0.3f} nm', linewidth=1.5)
+plt.title('$P_i$ = '+ np.array2string(P_in[4], formatter={'float_kind':lambda x: "%.2f" % x}) + ' mW')
 plt.xlabel('Number of iterations')
 plt.ylabel('Cavity Photon Energy [J]')
 plt.xlim([min(x_n_itr), max(x_n_itr)])
