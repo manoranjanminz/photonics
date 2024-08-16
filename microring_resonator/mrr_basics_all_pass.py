@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import scienceplots
 
 # plt.style.use('seaborn-v0_8-muted')
-plt.style.use(['science','no-latex', 'grid'])
+#plt.style.use(['science','no-latex', 'grid'])
 
 
 alpha_dB = 10.56           # propgation loss in dB/m
@@ -13,14 +13,14 @@ alpha = alpha_dB/4.343  # propagation loss in 1/m
 radius = 113e-6         # Radius of the MRR
 L = 2*np.pi*radius      # Circumference of the ring
 Lc = 0                  # Coupling length
-k = np.sqrt([0.0043, 0.0025])         # field coupling 
-#k = sqrt([0.0109 0.0067 0.004 0.0025 0.0015])# #linspace(0.01,0.05,5) #
+#k = np.sqrt([0.0043, 0.0025])         # field coupling 
+k = np.sqrt([0.0109, 0.0067, 0.004, 0.0025, 0.0015])# #linspace(0.01,0.05,5) #
 power_coupling = k**2
 r = np.sqrt(1-power_coupling)
 a = np.sqrt(np.exp(-alpha*(L)))
-ng = 2.11 #2.0873                 #
+ng = 2.0873             # Group index
 
-lamda = np.linspace(start=1.547, stop=1.556,num=1000001) # linspace(249666,249672,1001)# # simulation wavelength range in um
+lamda = np.linspace(start=1.54965, stop=1.54969,num=1000001) # linspace(249666,249672,1001)# # simulation wavelength range in um
 #neff = 1.820350376124900  - 0.173507629941756*(lamda-1.55)  + 0.001013914079182*(lamda-1.55).^2# #1.75um Weff
 neff = 1.822441325575143  - 0.171279836013422*(lamda-1.55) +  0.001158534242567*((lamda-1.55)**2)# #1.8um Weff
 lamda = lamda*1e-6
