@@ -20,23 +20,25 @@ Q_l = 12700
 lambda_0 = 1550e-9
 
 # Initial values
-P_in = np.array([0.001, 0.01, 0.1, 1, 5]) # in mW
-omega = np.linspace(2 * np.pi * 193.62e12, 2 * np.pi * 193.20e12, 200)
-# omega_rev = np.linspace(2 * np.pi * 193.20e12, 2 * np.pi * 193.62e12, 2000)
+P_in = np.array([0.001, 0.01, 0.1, 1, 5, 10, 16]) # in mW
+omega = np.linspace(2 * np.pi * 193.539e12, 2 * np.pi * 193.29e12, 200)
+#omega_rev = np.linspace(2 * np.pi * 193.20e12, 2 * np.pi * 193.62e12, 100)
 photon_energy = np.zeros((len(P_in), len(omega)))
 
 # fixed omega
 fixed_omega = 2 * np.pi * c / (lambda_0 + 0.1e-9)
-P_in_fo = np.linspace(1,15,200)
+P_in_fo = np.linspace(0,10,21)
 photon_energy_fixed_omega = np.zeros((len(P_in_fo), 1))
 
 # fixed omega and power in reverse order
-P_in_fo_rev = np.linspace(15,1,200)
+P_in_fo_rev = np.linspace(10,0,21)
 photon_energy_fixed_omega_rev = np.zeros((len(P_in_fo_rev), 1))
 
 n_itr = 1000 # No. of iterations for a fixed omega
 
 photon_energy_evo = np.zeros((len(P_in), len(omega), n_itr))
+photon_energy_evo_fo = np.zeros((len(P_in_fo), n_itr))
+photon_energy_evo_fo_rev = np.zeros((len(P_in_fo_rev), n_itr))
 x_n_itr = np.linspace(1,n_itr,n_itr)
 # Nonlinear CMT model
 for i in range(len(P_in)):
@@ -55,8 +57,9 @@ for i in range(len(P_in)):
             tau_v = Q_v / omega_0
             delta_lambda_therm = (lambda_0 / n_0) * dn_by_dT * photon_energy[i, j] * (1 / tau_linear) * R
             delta_lambda_kerr = (n_2 * c * photon_energy[i, j] * lambda_0) / (n_0 * n_g * V_kerr)
+        photon_energy[i,j]=np.average(photon_energy_evo[i,j,-10:-1]) # taking average of last 10 iterations
 
-# Cavity Energy vs Input Power for a fixed omega
+# Cavity Energy vs Input Power for a fixed omega (ascending power)
 for i in range(len(P_in_fo)):
     delta_lambda_therm_fo = 0
     delta_lambda_kerr_fo = 0
@@ -65,29 +68,33 @@ for i in range(len(P_in_fo)):
     tau_v_fo = Q_v/omega_0_fo
     for z in range(n_itr):
         photon_energy_fixed_omega[i] = ((1 / tau_in_fo) * (P_in_fo[i] / 2)) / ((fixed_omega - omega_0_fo) ** 2 + (((1 / tau_in_fo) + (1 / tau_v_fo) + (1 / tau_linear)) ** 2) / 4)
-        
+        photon_energy_evo_fo[i,z] = photon_energy_fixed_omega[i]
+
         omega_0_fo = 2 * np.pi * c / (lambda_0 + delta_lambda_therm_fo + delta_lambda_kerr_fo)
         tau_in_fo = Q_in / omega_0_fo
         tau_v_fo = Q_v / omega_0_fo
         delta_lambda_therm_fo = (lambda_0 / n_0) * dn_by_dT * photon_energy_fixed_omega[i] * (1 / tau_linear) * R
         delta_lambda_kerr_fo = (n_2 * c * photon_energy_fixed_omega[i] * lambda_0) / (n_0 * n_g * V_kerr)
+    photon_energy_fixed_omega[i]=np.average(photon_energy_evo_fo[i,-10:-1])# taking average of last 10 iterations
 
 
+# Cavity Energy vs Input Power for a fixed omega (descending power)
 for i in range(len(P_in_fo_rev)):
     delta_lambda_therm_fo_rev = 0
     delta_lambda_kerr_fo_rev = 0
-    omega_0_fo_rev = 2 * np.pi * c / (lambda_0 + delta_lambda_therm_fo + delta_lambda_kerr_fo)
+    omega_0_fo_rev = 2 * np.pi * c / (lambda_0 + delta_lambda_therm_fo_rev + delta_lambda_kerr_fo_rev)
     tau_in_fo_rev = Q_in/omega_0_fo_rev
     tau_v_fo_rev = Q_v/omega_0_fo_rev
     for z in range(n_itr):
         photon_energy_fixed_omega_rev[i] = ((1 / tau_in_fo_rev) * (P_in_fo_rev[i] / 2)) / ((fixed_omega - omega_0_fo_rev) ** 2 + (((1 / tau_in_fo_rev) + (1 / tau_v_fo_rev) + (1 / tau_linear)) ** 2) / 4)
-        
+        photon_energy_evo_fo_rev[i,z] = photon_energy_fixed_omega_rev[i]
+
         omega_0_fo_rev = 2 * np.pi * c / (lambda_0 + delta_lambda_therm_fo_rev + delta_lambda_kerr_fo_rev)
         tau_in_fo_rev = Q_in / omega_0_fo_rev
         tau_v_fo_rev = Q_v / omega_0_fo_rev
         delta_lambda_therm_fo_rev = (lambda_0 / n_0) * dn_by_dT * photon_energy_fixed_omega_rev[i] * (1 / tau_linear) * R
         delta_lambda_kerr_fo_rev = (n_2 * c * photon_energy_fixed_omega_rev[i] * lambda_0) / (n_0 * n_g * V_kerr)
-
+    photon_energy_fixed_omega_rev[i]=np.average(photon_energy_evo_fo_rev[i,-10:-1])# taking average of last 10 iterations
 
 
 # Plotting
@@ -117,10 +124,10 @@ print('round(len(omega)/2 - len(omega/4)):: ',round(len(omega)/2 - delta_omega_l
 
 
 plt.figure(dpi=400)
-plt.plot(x_n_itr, 1e-3 * photon_energy_evo[4,round(len(omega)/2),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2)]:0.3f} nm', linewidth=1.5)
-plt.plot(x_n_itr, 1e-3 * photon_energy_evo[4,round(len(omega)/2 + delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 + delta_omega_loc)]:0.3f} nm', linewidth=1.5)
-plt.plot(x_n_itr, 1e-3 * photon_energy_evo[4,round(len(omega)/2 - delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 - delta_omega_loc)]:0.3f} nm', linewidth=1.5)
-plt.title('$P_i$ = '+ np.array2string(P_in[4], formatter={'float_kind':lambda x: "%.2f" % x}) + ' mW')
+plt.plot(x_n_itr, 1e-3 * photon_energy_evo[5,round(len(omega)/2),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2)]:0.3f} nm', linewidth=1.5)
+plt.plot(x_n_itr, 1e-3 * photon_energy_evo[5,round(len(omega)/2 + delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 + delta_omega_loc)]:0.3f} nm', linewidth=1.5)
+plt.plot(x_n_itr, 1e-3 * photon_energy_evo[5,round(len(omega)/2 - delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 - delta_omega_loc)]:0.3f} nm', linewidth=1.5)
+plt.title('$P_i$ = '+ np.array2string(P_in[5], formatter={'float_kind':lambda x: "%.2f" % x}) + ' mW')
 plt.xlabel('Number of iterations')
 plt.ylabel('Cavity Photon Energy [J]')
 plt.xlim([min(x_n_itr), max(x_n_itr)])
@@ -138,12 +145,12 @@ plt.legend(loc='upper right', fontsize=6)
 plt.show()
 
 plt.figure(dpi=400)
-plt.plot(P_in_fo, photon_energy_fixed_omega, linewidth=1.5)
-plt.plot(P_in_fo_rev, photon_energy_fixed_omega_rev, linewidth=1.5)
+plt.plot(P_in_fo, photon_energy_fixed_omega, linewidth=1.5, label='Ascending')
+plt.plot(P_in_fo_rev, photon_energy_fixed_omega_rev, linewidth=1.5, label='Descending')
 plt.title('Cavity Energy vs Input Power')
 plt.xlabel('P$_i$ [mW]')
 plt.ylabel('Cavity Photon Energy')
 plt.xlim([min(P_in_fo), max(P_in_fo)])
-# plt.legend(loc='upper right', fontsize=6)
+plt.legend(loc='upper left', fontsize=6)
 plt.show()
 
