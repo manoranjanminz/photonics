@@ -34,7 +34,7 @@ photon_energy_fixed_omega = np.zeros((len(P_in_fo), 1))
 P_in_fo_rev = np.linspace(10,0,21)
 photon_energy_fixed_omega_rev = np.zeros((len(P_in_fo_rev), 1))
 
-n_itr = 1000 # No. of iterations for a fixed omega
+n_itr = 500 # No. of iterations for a fixed omega
 
 photon_energy_evo = np.zeros((len(P_in), len(omega), n_itr))
 photon_energy_evo_fo = np.zeros((len(P_in_fo), n_itr))
@@ -122,17 +122,17 @@ delta_omega_loc = len(omega)/40
 print('round(len(omega)/2 + len(omega/4)):: ',round(len(omega)/2 + delta_omega_loc))
 print('round(len(omega)/2 - len(omega/4)):: ',round(len(omega)/2 - delta_omega_loc))
 
-
-plt.figure(dpi=400)
-plt.plot(x_n_itr, 1e-3 * photon_energy_evo[5,round(len(omega)/2),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2)]:0.3f} nm', linewidth=1.5)
-plt.plot(x_n_itr, 1e-3 * photon_energy_evo[5,round(len(omega)/2 + delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 + delta_omega_loc)]:0.3f} nm', linewidth=1.5)
-plt.plot(x_n_itr, 1e-3 * photon_energy_evo[5,round(len(omega)/2 - delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 - delta_omega_loc)]:0.3f} nm', linewidth=1.5)
-plt.title('$P_i$ = '+ np.array2string(P_in[5], formatter={'float_kind':lambda x: "%.2f" % x}) + ' mW')
-plt.xlabel('Number of iterations')
-plt.ylabel('Cavity Photon Energy [J]')
-plt.xlim([min(x_n_itr), max(x_n_itr)])
-plt.legend(loc='upper right', fontsize=5)
-plt.show()
+for i in range(len(P_in)):
+    plt.figure(dpi=400)
+    plt.plot(x_n_itr, 1e-3 * photon_energy_evo[i,round(len(omega)/2),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2)]:0.3f} nm', linewidth=1.5)
+    plt.plot(x_n_itr, 1e-3 * photon_energy_evo[i,round(len(omega)/2 + delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 + delta_omega_loc)]:0.3f} nm', linewidth=1.5)
+    plt.plot(x_n_itr, 1e-3 * photon_energy_evo[i,round(len(omega)/2 - delta_omega_loc),:], label=f'$\lambda$= {2*np.pi*1e9*c/omega[round(len(omega)/2 - delta_omega_loc)]:0.3f} nm', linewidth=1.5)
+    plt.title('$P_i$ = '+ np.array2string(P_in[i], formatter={'float_kind':lambda x: "%.3f" % x}) + ' mW')
+    plt.xlabel('Number of iterations')
+    plt.ylabel('Cavity Photon Energy [J]')
+    plt.xlim([min(x_n_itr), max(x_n_itr)])
+    plt.legend(loc='upper right', fontsize=5)
+    plt.show()
 
 plt.figure(dpi=400)
 for i in range(len(P_in)):
